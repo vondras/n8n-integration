@@ -2,10 +2,11 @@
 
 The initial action/lifecycle implementation was validated at
 `05ce3f1a30bd13e4ac9e368cc18bc2d7e4a812cd`; the final form-path correction
-adds a read-only form fixture. The fork is based on upstream
+adds a read-only form fixture and a runtime guard against discovery-key reuse
+after credential rotation. The fork is based on upstream
 `ce0a7d186a8a761e934bc02fbeafe76591ddf9c9`. Validation performed October 12, 2026.
 
-- 43 isolated behavior tests passed on HA 2026.10.1 / Python 3.14 / aiohttp 3.14.4.
+- 44 isolated behavior tests passed on HA 2026.10.1 / Python 3.14 / aiohttp 3.14.4.
 - Ruff lint/format and Mypy passed. Official HA 2026.10.1 hassfest: zero invalid integrations.
 - Official HACS custom-repository checks: information, hacs.json and integration manifest passed.
   This is not a claim of inclusion in HACS's default catalog. The new fork's GitHub Actions

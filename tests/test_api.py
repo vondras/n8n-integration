@@ -260,3 +260,12 @@ def test_invalid_webhook_path(path):
 def test_invalid_auth(headers):
     with pytest.raises(api.N8nIntegrationApiClientError):
         api.validate_headers(headers)
+
+
+async def test_discovery_secret_cannot_be_reused_after_rotation():
+    c, session = client([])
+    with pytest.raises(api.N8nIntegrationApiClientError, match="Discovery key"):
+        await c.async_trigger_webhook(
+            node(), {"headers": {"X-Token": "dummy-discovery-secret"}}
+        )
+    assert session.calls == []

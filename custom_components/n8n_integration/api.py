@@ -220,10 +220,15 @@ class N8nIntegrationApiClient:
                 k: json.dumps(v) if not isinstance(v, str) else v
                 for k, v in (payload or {}).items()
             }
+        headers = validate_headers(options.get("headers", {}))
+        if self._api_token in headers.values():
+            raise N8nIntegrationApiClientError(
+                "Discovery key cannot be webhook authentication"
+            )
         return await self._request(
             chosen,
             f"{self._webhook_url}/webhook/{webhook_path(webhook_node)}",
-            headers=validate_headers(options.get("headers", {})),
+            headers=headers,
             params=params,
             data=None if chosen in {"GET", "HEAD"} else payload,
         )
