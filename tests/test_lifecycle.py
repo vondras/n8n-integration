@@ -221,3 +221,35 @@ async def test_no_selection_creates_no_entities(hass, transport):
     await setup(hass, item)
     assert all(s.state == "unavailable" for s in hass.states.async_all("button"))
     assert not hass.states.async_all("sensor")
+
+
+async def test_published_form_custom_path_is_read_only(hass, transport):
+    listing, detail, action = transport
+    raw = workflow(
+        nodes=[
+            {
+                "id": "node",
+                "name": "Form",
+                "type": "n8n-nodes-base.formTrigger",
+                "webhookId": "fallback-id",
+                "parameters": {"options": {"path": "custom-form"}},
+            }
+        ]
+    )
+    listing.return_value = {"data": [raw]}
+    detail.side_effect = None
+    detail.return_value = raw
+    item = entry()
+    await setup(hass, item)
+    sensor = hass.states.async_all("sensor")[0]
+    assert sensor.attributes["form_url"] == "https://n8n.example/form/custom-form"
+    assert not hass.states.async_all("button")
+    with pytest.raises(HomeAssistantError, match="webhook"):
+        await hass.services.async_call(
+            DOMAIN,
+            "trigger_webhook",
+            {"entity_id": sensor.entity_id},
+            blocking=True,
+            return_response=True,
+        )
+    action.assert_not_called()

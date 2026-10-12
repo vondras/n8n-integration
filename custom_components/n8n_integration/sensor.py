@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any
-from urllib.parse import quote
 
 import probatio as vol
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
@@ -15,7 +14,7 @@ from homeassistant.util import dt as dt_util
 
 from .api import HTTP_METHODS
 from .entity import N8nIntegrationEntity, reconcile_entities
-from .selection import FORM
+from .selection import FORM, form_path
 
 
 async def async_setup_entry(hass: Any, entry: Any, async_add_entities: Any) -> None:
@@ -63,9 +62,7 @@ class N8nIntegrationTriggerSensor(N8nIntegrationEntity, SensorEntity):
             "type": node["type"],
         }
         if node["type"] == FORM:
-            result["form_url"] = (
-                f"{client.webhook_url}/form/{quote(node['webhookId'], safe='')}"
-            )
+            result["form_url"] = f"{client.webhook_url}/form/{form_path(node)}"
         return result
 
     async def async_handle_trigger_webhook(

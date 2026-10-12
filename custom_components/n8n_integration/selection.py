@@ -37,12 +37,27 @@ def published_workflow(workflow: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
+def form_path(node: dict[str, Any]) -> str:
+    """Resolve v2 custom form paths before falling back to the webhook ID."""
+    parameters = node.get("parameters", {})
+    path = (
+        parameters.get("path")
+        or parameters.get("options", {}).get("path")
+        or node.get("webhookId")
+    )
+    return webhook_path({"parameters": {"path": path}})
+
+
 def eligible_node(node: dict[str, Any]) -> bool:
     """Exclude disabled, dynamic and known binary delivery nodes."""
     if node.get("disabled") or not isinstance(node.get("id"), str):
         return False
     if node.get("type") == FORM:
-        return bool(node.get("webhookId"))
+        try:
+            form_path(node)
+        except N8nIntegrationApiClientError:
+            return False
+        return True
     if node.get("type") != WEBHOOK:
         return False
     params = node.get("parameters", {})
