@@ -1,110 +1,28 @@
-"""Button platform for n8n_integration."""
+"""Buttons for explicitly selected action webhooks."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.components.button import ButtonEntity
 
-from .entity import N8nIntegrationEntity
-
-if TYPE_CHECKING:
-    from homeassistant.core import HomeAssistant
-    from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
-    from .coordinator import N8nDataUpdateCoordinator
-    from .data import N8nIntegrationConfigEntry
-    from .models import Workflow, WorkflowNode
+from .entity import N8nIntegrationEntity, reconcile_entities
+from .selection import WEBHOOK
 
 
-WEBHOOK_NODES = {"n8n-nodes-base.webhook"}
-
-
-async def async_setup_entry(
-    hass: HomeAssistant,  # noqa: ARG001 Unused function argument: `hass`
-    entry: N8nIntegrationConfigEntry,
-    async_add_entities: AddEntitiesCallback,
-) -> None:
-    """Set up the button platform."""
-    coordinator = entry.runtime_data.coordinator
-    workflows: list[Workflow] = coordinator.data.get("data", [])
-
-    entities: list[N8nWorkflowButton] = [
-        N8nWorkflowButton(
-            coordinator=coordinator,
-            node=node,
-            workflow=workflow,
-        )
-        for workflow in workflows
-        for node in workflow.get("nodes", [])
-        if node.get("type") in WEBHOOK_NODES
-    ]
-
-    async_add_entities(entities)
+async def async_setup_entry(hass: Any, entry: Any, async_add_entities: Any) -> None:
+    """Install dynamic discovery listener."""
+    reconcile_entities(entry, async_add_entities, N8nWorkflowButton, node_type=WEBHOOK)
 
 
 class N8nWorkflowButton(N8nIntegrationEntity, ButtonEntity):
-    """n8n_integration Button class."""
+    """No response or payload is retained in entity attributes."""
 
-    entity_description = ButtonEntityDescription(
-        key="n8n_webhook_trigger",
-    )
+    _attr_icon = "mdi:gesture-tap"
 
-    def __init__(
-        self,
-        coordinator: N8nDataUpdateCoordinator,
-        workflow: Workflow,
-        node: WorkflowNode,
-    ) -> None:
-        """Initialize the button class."""
-        super().__init__(coordinator)
-        self._workflow = workflow
-        self._node = node
+    def __init__(self, coordinator: Any, workflow_id: str, node_id: str) -> None:
+        super().__init__(coordinator, workflow_id, node_id, "button")
 
-        workflow_id = workflow.get("id")
-        node_id = node.get("id")
-        workflow_name = workflow.get("name")
-        node_name = node.get("name")
-
-        self._attr_unique_id = f"{self._attr_unique_id}-{workflow_id}-{node_id}-button"
-        self._attr_icon = "mdi:gesture-tap"
-        self._attr_name = f"{workflow_name}: {node_name}"
-
-        self._last_triggered_at = None
-        self._response = {}
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return the state attributes."""
-        return {"response": self._response}
-
-    async def async_press(self, **_: Any) -> None:
-        """Handle the button press to trigger the workflow webhook node."""
-        options = {}
-        if self._last_triggered_at is not None:
-            options["_last_triggered_at"] = self._last_triggered_at
-
-        client = self.coordinator.config_entry.runtime_data.client
-
-        result = await client.async_trigger_webhook(self._node, options)
-
-        parameters = self._node.get("parameters", {})
-        if parameters.get("responseMode") == "responseNode":
-            self._response = result
-
-        self._last_triggered_at = self.state
-        self.async_write_ha_state()
-        await self.coordinator.async_request_refresh()
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return device information."""
-        workflow_id: str = self._workflow.get("id") or ""
-        workflow_name: str | None = self._workflow.get("name")
-
-        return DeviceInfo(
-            identifiers={("n8n_integration", workflow_id)},
-            name=workflow_name,
-            manufacturer="n8n",
-        )
+    async def async_press(self, **kwargs: Any) -> None:
+        """Trigger the current published node once."""
+        await self.coordinator.async_trigger(self.workflow_id, self.node_id)

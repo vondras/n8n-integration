@@ -17,3 +17,6 @@ coverage.xml
 config/*
 !config/configuration.yaml
 !config/automations.yaml
+
+.venv/
+.mypy_cache/

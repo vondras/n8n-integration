@@ -3,15 +3,41 @@
     "step": {
       "user": {
         "data": {
-          "url": "URL",
-          "api_token": "API Token"
+          "url": "Discovery API HTTPS origin",
+          "webhook_url": "Webhook HTTPS origin",
+          "api_token": "Discovery API token (blank keeps existing token in Options)",
+          "allow_http": "Allow HTTP for an internal endpoint",
+          "discovery_timeout": "Discovery timeout (seconds)",
+          "action_timeout": "Action timeout (seconds)",
+          "poll_interval": "Metadata polling interval (seconds)"
+        }
+      },
+      "workflows": {
+        "description": "Select published workflows. Nothing is selected by default.",
+        "data": {
+          "workflows": "Workflows"
+        }
+      },
+      "nodes": {
+        "description": "Select individual action webhooks or form links. Omit delivery endpoints and dangerous actions.",
+        "data": {
+          "nodes": "Nodes"
+        }
+      },
+      "auth": {
+        "description": "Authentication for {node}. Enter a JSON object of authentication headers. Blank preserves existing authentication. See the README for an example. Credentials are never read from n8n.",
+        "data": {
+          "headers": "Webhook auth headers (JSON, masked)",
+          "clear_auth": "Clear stored authentication"
         }
       }
     },
     "error": {
-      "auth": "URL/API Token is wrong.",
-      "connection": "Unable to connect to the server.",
-      "unknown": "Unknown error occurred."
+      "auth": "Endpoint rejected authentication.",
+      "connection": "Unable to connect to the endpoint.",
+      "invalid_config": "Check HTTPS origins, direct routing and valid published workflow JSON. Redirects are rejected.",
+      "invalid_selection": "Select only discovered published workflows/nodes.",
+      "invalid_headers": "Provide a valid JSON header object, excluding the discovery key and prohibited headers."
     },
     "abort": {
       "already_configured": "This entry is already configured."
@@ -21,15 +47,41 @@
     "step": {
       "init": {
         "data": {
-          "url": "URL",
-          "api_token": "API Token"
+          "url": "Discovery API HTTPS origin",
+          "webhook_url": "Webhook HTTPS origin",
+          "api_token": "Discovery API token (blank keeps existing token in Options)",
+          "allow_http": "Allow HTTP for an internal endpoint",
+          "discovery_timeout": "Discovery timeout (seconds)",
+          "action_timeout": "Action timeout (seconds)",
+          "poll_interval": "Metadata polling interval (seconds)"
+        }
+      },
+      "workflows": {
+        "description": "Select published workflows. Nothing is selected by default.",
+        "data": {
+          "workflows": "Workflows"
+        }
+      },
+      "nodes": {
+        "description": "Select individual action webhooks or form links. Omit delivery endpoints and dangerous actions.",
+        "data": {
+          "nodes": "Nodes"
+        }
+      },
+      "auth": {
+        "description": "Authentication for {node}. Enter a JSON object of authentication headers. Blank preserves existing authentication. See the README for an example. Credentials are never read from n8n.",
+        "data": {
+          "headers": "Webhook auth headers (JSON, masked)",
+          "clear_auth": "Clear stored authentication"
         }
       }
     },
     "error": {
-      "auth": "URL/API Token is wrong.",
-      "connection": "Unable to connect to the server.",
-      "unknown": "Unknown error occurred."
+      "auth": "Endpoint rejected authentication.",
+      "connection": "Unable to connect to the endpoint.",
+      "invalid_config": "Check HTTPS origins, direct routing and valid published workflow JSON. Redirects are rejected.",
+      "invalid_selection": "Select only discovered published workflows/nodes.",
+      "invalid_headers": "Provide a valid JSON header object, excluding the discovery key and prohibited headers."
     }
   },
   "services": {
@@ -47,7 +99,7 @@
         },
         "method": {
           "name": "HTTP method",
-          "description": "HTTP method to use when the webhook allows multiple methods. Defaults to the first allowed method if not set or not allowed."
+          "description": "Choose a method supported by the published node. Unsupported methods are rejected."
         }
       }
     }

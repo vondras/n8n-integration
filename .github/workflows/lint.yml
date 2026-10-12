@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: "3.13"
+          python-version: "3.14"
           cache: "pip"
 
       - name: Install requirements
@@ -32,3 +32,9 @@ jobs:
 
       - name: Format
         run: python3 -m ruff format . --check
+
+      - name: Type checks
+        run: python3 -m mypy custom_components/n8n_integration
+
+      - name: Behavior tests
+        run: python3 -m pytest -q
