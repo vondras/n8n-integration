@@ -28,8 +28,12 @@ after credential rotation. The fork is based on upstream
   was omitted. Outside-window requests returned skipped/outside_window; the estimated allowance
   and attempt/success counters were unchanged. No charged manual preview was performed.
 
-The live relay cutover requires explicit production authorization. Its existing REST action
-remains in place until that approval; the installed fork and selected action are ready.
+The live relay cutover was explicitly authorized and completed on October 12. Only the
+action in the single existing relay changed; its triggers, conditions and mode were
+preserved, and rollback YAML was saved. HA config check/reload passed. One synthetic
+outside-window arrival produced one finished relay run through the fork payload action;
+the underlying sensor and allowance/attempt/success counters were unchanged. No generation
+or playback occurred. The original REST command remains available for rollback.
 Physical speaker audibility, costume samples and long observation remain separate household
 acceptance items. No scheduled prompts or execution-monitoring subsystem were added.
 
